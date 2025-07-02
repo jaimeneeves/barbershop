@@ -1,6 +1,6 @@
 export default function Page() {
   return (
-    <div className="flex flex-col min-h-screen p-8">
+    <div className="flex flex-col p-8">
       <h1 className="text-2xl font-bold">Dashboard</h1>
       <p className="mt-4 text-lg">Welcome to the dashboard!</p>
       <div className="mt-8">
