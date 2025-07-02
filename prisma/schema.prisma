@@ -14,15 +14,16 @@ datasource db {
 }
 
 model User {
-  id                   String        @id @default(cuid())
+  id                   String               @id @default(cuid())
   name                 String
-  email                String        @unique
+  email                String               @unique
   password             String
-  role                 Role          @default(CLIENT)
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
-  appointmentsAsClient Appointment[] @relation("ClientAppointments")
-  appointmentsAsBarber Appointment[] @relation("BarberAppointments")
+  role                 Role                 @default(CLIENT)
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  appointmentsAsClient Appointment[]        @relation("ClientAppointments")
+  appointmentsAsBarber Appointment[]        @relation("BarberAppointments")
+  availability         BarberAvailability[]
   Loyalty              Loyalty?
 }
 
@@ -52,6 +53,15 @@ model Loyalty {
   userId String @unique
   points Int    @default(0)
   user   User   @relation(fields: [userId], references: [id])
+}
+
+model BarberAvailability {
+  id        Int    @id @default(autoincrement())
+  barberId  String
+  dayOfWeek Int // 0 = Domingo, 1 = Segunda...
+  startTime String // formato HH:mm
+  endTime   String
+  barber    User   @relation(fields: [barberId], references: [id])
 }
 
 enum AppointmentStatus {
