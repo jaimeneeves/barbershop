@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useSWRMutation from "swr/mutation";
+import { ArrowLeft } from "lucide-react";
 import useSWR from "swr";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -87,7 +88,17 @@ export default function NovoAgendamentoPage() {
 
   return (
     <main className="p-4 max-w-md mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">Novo Agendamento</h1>
+      <div className="flex items-center gap-3">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => router.back()}
+          className="rounded-full"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <h1 className="text-2xl font-bold">Novo Agendamento</h1>
+      </div>
 
       <Card>
         <CardHeader>
