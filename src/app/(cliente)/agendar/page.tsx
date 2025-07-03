@@ -37,8 +37,6 @@ const FormSchema = z.object({
   userId: z.string().optional(),
 });
 
-// type FormData = z.infer<typeof schema>;
-
 export default function NovoAgendamentoPage() {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -52,9 +50,9 @@ export default function NovoAgendamentoPage() {
   const selectedBarberId = form.watch("barberId");
   const selectedDate = form.watch("data");
 
-  const { data: horariosOcupados } = useSWR(
+  const { data: horariosDisponiveis, isLoading: loadingHorarios } = useSWR(
     selectedBarberId && selectedDate
-      ? `/api/barbers/${selectedBarberId}/busy?date=${selectedDate}`
+      ? `/api/barbers/${selectedBarberId}/available?date=${selectedDate}`
       : null,
     fetcher
   );
@@ -117,7 +115,7 @@ export default function NovoAgendamentoPage() {
         <CardContent>
           <Form {...form}>
             <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
-
+              {/* Serviço */}
               <FormField
                 control={form.control}
                 name="serviceId"
@@ -194,42 +192,42 @@ export default function NovoAgendamentoPage() {
                 )}
               />
 
-              {/* Hora */}
+              {/* Hora como grid */}
               <FormField
                 control={form.control}
                 name="hora"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Hora</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="time"
-                        {...field}
-                        value={field.value || ""}
-                        className={cn(form.formState.errors.hora && "border-red-500")}
-                      />
-                    </FormControl>
-                    <FormMessage />
+                    <FormLabel>
+                     {selectedBarberId && selectedDate && `Horário em ${new Date(selectedDate).toLocaleDateString("pt-BR", {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}`}
+                    </FormLabel>
+                    <div className="grid grid-cols-3 gap-2">
+                      {loadingHorarios && (
+                        <p className="col-span-3 text-sm text-muted-foreground">Carregando horários...</p>
+                      )}
 
-                    {/* Exibir horários ocupados */}
-                    {selectedBarberId && selectedDate && horariosOcupados?.horarios?.length > 0 && (
-                      <div className="text-sm text-muted-foreground pt-1">
-                        <strong>Horários ocupados:</strong>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {horariosOcupados.horarios.map((h: string) => (
-                            <span
-                              key={h}
-                              className="px-2 py-1 bg-red-100 text-red-600 rounded-full text-xs font-medium"
-                            >
-                              {new Date(h).toLocaleTimeString("pt-BR", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                      {!loadingHorarios && horariosDisponiveis?.horarios?.length === 0 && (
+                        <p className="col-span-3 text-sm text-muted-foreground">Nenhum horário disponível</p>
+                      )}
+
+                      {horariosDisponiveis?.horarios?.map((hora: string) => (
+                        <Button
+                          key={hora}
+                          type="button"
+                          variant={field.value === hora ? "default" : "outline"}
+                          className="w-full"
+                          onClick={() => field.onChange(hora)}
+                        >
+                          {hora}
+                        </Button>
+                      ))}
+                    </div>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
