@@ -18,8 +18,17 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { fetcher, postFetcher } from "@/lib/fetcher";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 
-const schema = z.object({
+const FormSchema = z.object({
   serviceId: z.string().min(1, "Selecione um serviço."),
   barberId: z.string().min(1, "Selecione um barbeiro."),
   data: z.string().min(1, "Informe a data."),
@@ -27,49 +36,42 @@ const schema = z.object({
   userId: z.string().optional(),
 });
 
-type FormData = z.infer<typeof schema>;
+// type FormData = z.infer<typeof schema>;
 
 export default function NovoAgendamentoPage() {
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
-  });
+  // const {
+  //   register,
+  //   handleSubmit,
+  //   setValue,
+  //   formState: { errors },
+  // } = useForm<FormData>({
+  //   resolver: zodResolver(schema),
+  // });
 
-  const { trigger, isMutating } = useSWRMutation("/api/agendamentos", postFetcher);
-  
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+  })
+
+  const { trigger, isMutating } = useSWRMutation("/api/appointments", postFetcher);
+
   const { data: barbeiros, isLoading: loadingBarbeiros } = useSWR("/api/barbers", fetcher);
   const { data: servicos, isLoading: loadingServicos } = useSWR("/api/services", fetcher);
 
-  const onSubmit = async (formData: FormData) => {
+  const onSubmit = async (formData: z.infer<typeof FormSchema>) => {
     try {
+      console.log("Form data submitted:", formData);
       const userId = "cliente-123";
-      const serviceMap: Record<string, string> = {
-        corte: "srv-corte-1",
-        barba: "srv-barba-1",
-        combo: "srv-combo-1",
-      };
-      const barberMap: Record<string, string> = {
-        joao: "barbeiro-joao-1",
-        pedro: "barbeiro-pedro-2",
-        lucas: "barbeiro-lucas-3",
-      };
-
       const isoDate = new Date(`${formData.data}T${formData.hora}`).toISOString();
       const payload = {
         userId,
-        barberId: barberMap[formData.barberId],
-        serviceId: serviceMap[formData.serviceId],
+        barberId: formData.barberId,
+        serviceId: formData.serviceId,
         date: isoDate,
         hora: formData.hora,
         data: formData.data,
       };
 
       await trigger(payload);
-      alert("Agendamento criado com sucesso!");
     } catch (error) {
       alert("Erro ao agendar. Tente novamente.");
       console.error(error);
@@ -93,80 +95,109 @@ export default function NovoAgendamentoPage() {
           <h2 className="text-lg font-semibold">Preencha as informações</h2>
         </CardHeader>
         <CardContent>
-          <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+          <Form {...form}>
+            <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
 
-            {/* Serviço */}
-            <div className="space-y-1">
-              <Label>Serviço</Label>
-              <Select onValueChange={(val) => setValue("serviceId", val)}>
-                <SelectTrigger className={cn(errors.serviceId && "border-red-500", "w-full")}>
-                  <SelectValue placeholder={loadingServicos ? "Carregando..." : "Selecione um serviço"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {servicos?.map((serv: {
-                    id: string;
-                    name: string;
-                  }) => (
-                    <SelectItem key={serv.id} value={serv.id}>
-                      {serv.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.serviceId && <p className="text-sm text-red-500">{errors.serviceId.message}</p>}
-            </div>
-
-            {/* Data */}
-            <div className="space-y-1">
-              <Label>Data</Label>
-              <Input
-                type="date"
-                {...register("data")}
-                className={cn(errors.data && "border-red-500")}
+              <FormField
+                control={form.control}
+                name="serviceId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Serviço</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className={cn(form.formState.errors.serviceId && "border-red-500", "w-full")}>
+                          <SelectValue placeholder="Selecione um serviço" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {servicos?.map((serv: {
+                          id: number;
+                          name: string;
+                        }) => (
+                          <SelectItem key={serv.id} value={serv.id.toString()}>
+                            {serv.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.data && (
-                <p className="text-sm text-red-500">{errors.data.message}</p>
-              )}
-            </div>
-
-            {/* Hora */}
-            <div className="space-y-1">
-              <Label>Hora</Label>
-              <Input
-                type="time"
-                {...register("hora")}
-                className={cn(errors.hora && "border-red-500")}
+              
+              {/* Data */}
+              <FormField
+                control={form.control}
+                name="data"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Data</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        {...field}
+                        value={field.value || ""}
+                        className={cn(form.formState.errors.data && "border-red-500")}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.hora && (
-                <p className="text-sm text-red-500">{errors.hora.message}</p>
-              )}
-            </div>
 
-            {/* Barbeiro */}
-            <div className="space-y-1">
-              <Label>Barbeiro</Label>
-              <Select
-               onValueChange={(val) => setValue("barberId", val)}
-              >
-                <SelectTrigger className={cn(errors.barberId && "border-red-500", "w-full")}>
-                  <SelectValue placeholder={loadingBarbeiros ? "Carregando..." : "Selecione um barbeiro"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {barbeiros?.map((barb: { id: string; name: string }) => (
-                    <SelectItem key={barb.id} value={barb.id}>
-                      {barb.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.barberId && <p className="text-sm text-red-500">{errors.barberId.message}</p>}
-            </div>
+              {/* Hora */}
+              <FormField
+                control={form.control}
+                name="hora"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hora</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="time"
+                        {...field}
+                        value={field.value || ""}
+                        className={cn(form.formState.errors.hora && "border-red-500")}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* Botão */}
-            <Button type="submit" size='lg' className="w-full mt-2 rounded-full" disabled={isMutating}>
-              {isMutating ? "Agendando..." : "Confirmar Agendamento"}
-            </Button>
-          </form>
+              {/* Barbeiro */}
+              <FormField
+                control={form.control}
+                name="barberId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Barbeiro</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className={cn(form.formState.errors.barberId && "border-red-500", "w-full")}>
+                          <SelectValue placeholder="Selecione um barbeiro" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {barbeiros?.map((barb: { id: string; name: string }) => (
+                          <SelectItem key={barb.id} value={barb.id}>
+                            {barb.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              {/* Botão */}
+              <Button type="submit" size='lg' className="w-full mt-2 rounded-full" disabled={isMutating}>
+                {isMutating ? "Agendando..." : "Confirmar Agendamento"}
+              </Button>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </main>
