@@ -49,6 +49,16 @@ export default function NovoAgendamentoPage() {
   const { data: barbeiros } = useSWR("/api/barbers", fetcher);
   const { data: servicos } = useSWR("/api/services", fetcher);
 
+  const selectedBarberId = form.watch("barberId");
+  const selectedDate = form.watch("data");
+
+  const { data: horariosOcupados } = useSWR(
+    selectedBarberId && selectedDate
+      ? `/api/barbers/${selectedBarberId}/busy?date=${selectedDate}`
+      : null,
+    fetcher
+  );
+
   const onSubmit = async (formData: z.infer<typeof FormSchema>) => {
     try {
       console.log("Form data submitted:", formData);
@@ -137,6 +147,32 @@ export default function NovoAgendamentoPage() {
                   </FormItem>
                 )}
               />
+
+              {/* Barbeiro */}
+              <FormField
+                control={form.control}
+                name="barberId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Barbeiro</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className={cn(form.formState.errors.barberId && "border-red-500", "w-full")}>
+                          <SelectValue placeholder="Selecione um barbeiro" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {barbeiros?.map((barb: { id: string; name: string }) => (
+                          <SelectItem key={barb.id} value={barb.id}>
+                            {barb.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
               {/* Data */}
               <FormField
@@ -174,32 +210,26 @@ export default function NovoAgendamentoPage() {
                       />
                     </FormControl>
                     <FormMessage />
-                  </FormItem>
-                )}
-              />
 
-              {/* Barbeiro */}
-              <FormField
-                control={form.control}
-                name="barberId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Barbeiro</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className={cn(form.formState.errors.barberId && "border-red-500", "w-full")}>
-                          <SelectValue placeholder="Selecione um barbeiro" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {barbeiros?.map((barb: { id: string; name: string }) => (
-                          <SelectItem key={barb.id} value={barb.id}>
-                            {barb.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
+                    {/* Exibir horários ocupados */}
+                    {selectedBarberId && selectedDate && horariosOcupados?.horarios?.length > 0 && (
+                      <div className="text-sm text-muted-foreground pt-1">
+                        <strong>Horários ocupados:</strong>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {horariosOcupados.horarios.map((h: string) => (
+                            <span
+                              key={h}
+                              className="px-2 py-1 bg-red-100 text-red-600 rounded-full text-xs font-medium"
+                            >
+                              {new Date(h).toLocaleTimeString("pt-BR", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </FormItem>
                 )}
               />
