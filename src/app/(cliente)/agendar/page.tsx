@@ -22,7 +22,7 @@ const schema = z.object({
   barberId: z.string().min(1, "Selecione um barbeiro."),
   data: z.string().min(1, "Informe a data."),
   hora: z.string().min(1, "Informe a hora."),
-  userId: z.string().optional(), // userId pode ser opcional se for definido no onSubmit
+  userId: z.string().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -74,7 +74,9 @@ export default function NovoAgendamentoPage() {
         userId,
         barberId: barberMap[formData.barberId],
         serviceId: serviceMap[formData.serviceId],
-        date: isoDate
+        date: isoDate,
+        hora: formData.hora,
+        data: formData.data,
       };
 
       await trigger(payload);
