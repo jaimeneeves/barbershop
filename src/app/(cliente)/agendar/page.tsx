@@ -72,9 +72,15 @@ export default function NovoAgendamentoPage() {
       };
 
       await trigger(payload);
+
+      const barbeiroSelecionado = barbeiros.find((b: { id: string; name: string }) => b.id === formData.barberId);
+      const servicoSelecionado = servicos.find((s:{ id: number; name: string }) => s.id === formData.serviceId);
+
       toast.success("Agendamento realizado com sucesso!");
       form.reset();
-      router.push("/perfil");
+      router.push(
+        `/agendamento/sucesso?barbeiro=${encodeURIComponent(barbeiroSelecionado?.name)}&servico=${encodeURIComponent(servicoSelecionado?.name)}&data=${formData.data}&hora=${formData.hora}`
+      );
     } catch (error) {
       console.log("Erro ao agendar:", error);
       let errorMessage = "Erro desconhecido";
