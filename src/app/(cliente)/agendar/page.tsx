@@ -18,10 +18,11 @@ import {
 import { cn } from "@/lib/utils";
 
 const schema = z.object({
-  servico: z.string().min(1, "Selecione um serviço."),
+  serviceId: z.string().min(1, "Selecione um serviço."),
+  barberId: z.string().min(1, "Selecione um barbeiro."),
   data: z.string().min(1, "Informe a data."),
   hora: z.string().min(1, "Informe a hora."),
-  barbeiro: z.string().min(1, "Selecione um barbeiro."),
+  userId: z.string().optional(), // userId pode ser opcional se for definido no onSubmit
 });
 
 type FormData = z.infer<typeof schema>;
@@ -54,9 +55,29 @@ export default function NovoAgendamentoPage() {
 
   const { trigger, isMutating } = useSWRMutation("/api/agendamentos", createAgendamento);
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (formData: FormData) => {
     try {
-      await trigger(data);
+      const userId = "cliente-123";
+      const serviceMap: Record<string, string> = {
+        corte: "srv-corte-1",
+        barba: "srv-barba-1",
+        combo: "srv-combo-1",
+      };
+      const barberMap: Record<string, string> = {
+        joao: "barbeiro-joao-1",
+        pedro: "barbeiro-pedro-2",
+        lucas: "barbeiro-lucas-3",
+      };
+
+      const isoDate = new Date(`${formData.data}T${formData.hora}`).toISOString();
+      const payload = {
+        userId,
+        barberId: barberMap[formData.barberId],
+        serviceId: serviceMap[formData.serviceId],
+        date: isoDate
+      };
+
+      await trigger(payload);
       alert("Agendamento criado com sucesso!");
     } catch (error) {
       alert("Erro ao agendar. Tente novamente.");
@@ -78,8 +99,8 @@ export default function NovoAgendamentoPage() {
             {/* Serviço */}
             <div className="space-y-1">
               <Label>Serviço</Label>
-              <Select onValueChange={(val) => setValue("servico", val)}>
-                <SelectTrigger className={cn(errors.servico && "border-red-500")}>
+              <Select onValueChange={(val) => setValue("serviceId", val)}>
+                <SelectTrigger className={cn(errors.serviceId && "border-red-500")}>
                   <SelectValue placeholder="Selecione um serviço" />
                 </SelectTrigger>
                 <SelectContent>
@@ -88,8 +109,8 @@ export default function NovoAgendamentoPage() {
                   <SelectItem value="combo">Corte + Barba</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.servico && (
-                <p className="text-sm text-red-500">{errors.servico.message}</p>
+              {errors.serviceId && (
+                <p className="text-sm text-red-500">{errors.serviceId.message}</p>
               )}
             </div>
 
@@ -122,8 +143,8 @@ export default function NovoAgendamentoPage() {
             {/* Barbeiro */}
             <div className="space-y-1">
               <Label>Barbeiro</Label>
-              <Select onValueChange={(val) => setValue("barbeiro", val)}>
-                <SelectTrigger className={cn(errors.barbeiro && "border-red-500")}>
+              <Select onValueChange={(val) => setValue("barberId", val)}>
+                <SelectTrigger className={cn(errors.barberId && "border-red-500")}>
                   <SelectValue placeholder="Selecione um barbeiro" />
                 </SelectTrigger>
                 <SelectContent>
@@ -132,8 +153,8 @@ export default function NovoAgendamentoPage() {
                   <SelectItem value="lucas">Lucas</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.barbeiro && (
-                <p className="text-sm text-red-500">{errors.barbeiro.message}</p>
+              {errors.barberId && (
+                <p className="text-sm text-red-500">{errors.barberId.message}</p>
               )}
             </div>
 
