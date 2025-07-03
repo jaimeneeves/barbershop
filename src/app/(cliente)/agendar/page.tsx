@@ -8,7 +8,7 @@ import useSWR from "swr";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { toast } from "sonner"
 import {
   Select,
   SelectTrigger,
@@ -18,10 +18,10 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { fetcher, postFetcher } from "@/lib/fetcher";
+import { useRouter } from 'next/navigation';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/form"
 
 const FormSchema = z.object({
-  serviceId: z.string().min(1, "Selecione um serviço."),
+  serviceId: z.number().min(1, "Selecione um serviço."),
   barberId: z.string().min(1, "Selecione um barbeiro."),
   data: z.string().min(1, "Informe a data."),
   hora: z.string().min(1, "Informe a hora."),
@@ -39,28 +39,19 @@ const FormSchema = z.object({
 // type FormData = z.infer<typeof schema>;
 
 export default function NovoAgendamentoPage() {
-  // const {
-  //   register,
-  //   handleSubmit,
-  //   setValue,
-  //   formState: { errors },
-  // } = useForm<FormData>({
-  //   resolver: zodResolver(schema),
-  // });
-
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   })
-
+  const router = useRouter();
   const { trigger, isMutating } = useSWRMutation("/api/appointments", postFetcher);
 
-  const { data: barbeiros, isLoading: loadingBarbeiros } = useSWR("/api/barbers", fetcher);
-  const { data: servicos, isLoading: loadingServicos } = useSWR("/api/services", fetcher);
+  const { data: barbeiros } = useSWR("/api/barbers", fetcher);
+  const { data: servicos } = useSWR("/api/services", fetcher);
 
   const onSubmit = async (formData: z.infer<typeof FormSchema>) => {
     try {
       console.log("Form data submitted:", formData);
-      const userId = "cliente-123";
+      const userId = "cmcm2mrni0001jxs4sozjt0hj";
       const isoDate = new Date(`${formData.data}T${formData.hora}`).toISOString();
       const payload = {
         userId,
@@ -72,9 +63,17 @@ export default function NovoAgendamentoPage() {
       };
 
       await trigger(payload);
+      toast.success("Agendamento realizado com sucesso!");
+      form.reset();
+      router.push("/perfil");
     } catch (error) {
-      alert("Erro ao agendar. Tente novamente.");
-      console.error(error);
+      console.log("Erro ao agendar:", error);
+      let errorMessage = "Erro desconhecido";
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const errObj = error as { response?: { error?: string } };
+        errorMessage = errObj.response?.error || errorMessage;
+      }
+      toast.error(`Erro ao agendar: ${errorMessage}`);
     }
   };
 
@@ -104,7 +103,9 @@ export default function NovoAgendamentoPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Serviço</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={(val) => field.onChange(Number(val))}
+                      defaultValue={field.value ? String(field.value) : undefined}>
                       <FormControl>
                         <SelectTrigger className={cn(form.formState.errors.serviceId && "border-red-500", "w-full")}>
                           <SelectValue placeholder="Selecione um serviço" />
@@ -115,7 +116,7 @@ export default function NovoAgendamentoPage() {
                           id: number;
                           name: string;
                         }) => (
-                          <SelectItem key={serv.id} value={serv.id.toString()}>
+                          <SelectItem key={serv.id} value={String(serv.id)}>
                             {serv.name}
                           </SelectItem>
                         ))}
