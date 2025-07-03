@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import useSWRMutation from "swr/mutation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,28 +26,37 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
+// Função para envio da requisição POST
+async function createAgendamento(
+  url: string,
+  { arg }: { arg: FormData }
+): Promise<void> {
+  const res = await fetch(url, {
+    method: "POST",
+    body: JSON.stringify(arg),
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!res.ok) {
+    throw new Error("Erro ao agendar");
+  }
+}
+
 export default function NovoAgendamentoPage() {
   const {
     register,
     handleSubmit,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
+  const { trigger, isMutating } = useSWRMutation("/api/agendamentos", createAgendamento);
+
   const onSubmit = async (data: FormData) => {
     try {
-      const res = await fetch("/api/agendamentos", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!res.ok) {
-        throw new Error("Erro ao agendar");
-      }
-
+      await trigger(data);
       alert("Agendamento criado com sucesso!");
     } catch (error) {
       alert("Erro ao agendar. Tente novamente.");
@@ -129,8 +138,8 @@ export default function NovoAgendamentoPage() {
             </div>
 
             {/* Botão */}
-            <Button type="submit" className="w-full mt-2" disabled={isSubmitting}>
-              {isSubmitting ? "Agendando..." : "Confirmar Agendamento"}
+            <Button type="submit" className="w-full mt-2" disabled={isMutating}>
+              {isMutating ? "Agendando..." : "Confirmar Agendamento"}
             </Button>
           </form>
         </CardContent>
