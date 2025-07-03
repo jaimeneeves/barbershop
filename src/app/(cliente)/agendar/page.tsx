@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useSWRMutation from "swr/mutation";
+import useSWR from "swr";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { fetcher, postFetcher } from "@/lib/fetcher";
 
 const schema = z.object({
   serviceId: z.string().min(1, "Selecione um serviço."),
@@ -27,22 +29,6 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-// Função para envio da requisição POST
-async function createAgendamento(
-  url: string,
-  { arg }: { arg: FormData }
-): Promise<void> {
-  const res = await fetch(url, {
-    method: "POST",
-    body: JSON.stringify(arg),
-    headers: { "Content-Type": "application/json" },
-  });
-
-  if (!res.ok) {
-    throw new Error("Erro ao agendar");
-  }
-}
-
 export default function NovoAgendamentoPage() {
   const {
     register,
@@ -53,7 +39,10 @@ export default function NovoAgendamentoPage() {
     resolver: zodResolver(schema),
   });
 
-  const { trigger, isMutating } = useSWRMutation("/api/agendamentos", createAgendamento);
+  const { trigger, isMutating } = useSWRMutation("/api/agendamentos", postFetcher);
+  
+  const { data: barbeiros, isLoading: loadingBarbeiros } = useSWR("/api/barbers", fetcher);
+  const { data: servicos, isLoading: loadingServicos } = useSWR("/api/services", fetcher);
 
   const onSubmit = async (formData: FormData) => {
     try {
@@ -87,6 +76,14 @@ export default function NovoAgendamentoPage() {
     }
   };
 
+  if (!barbeiros || !servicos) {
+    return (
+      <div className="p-4 max-w-md mx-auto">
+        <p>Carregando...</p>
+      </div>
+    );
+  }
+
   return (
     <main className="p-4 max-w-md mx-auto space-y-6">
       <h1 className="text-2xl font-bold">Novo Agendamento</h1>
@@ -102,18 +99,21 @@ export default function NovoAgendamentoPage() {
             <div className="space-y-1">
               <Label>Serviço</Label>
               <Select onValueChange={(val) => setValue("serviceId", val)}>
-                <SelectTrigger className={cn(errors.serviceId && "border-red-500")}>
-                  <SelectValue placeholder="Selecione um serviço" />
+                <SelectTrigger className={cn(errors.serviceId && "border-red-500", "w-full")}>
+                  <SelectValue placeholder={loadingServicos ? "Carregando..." : "Selecione um serviço"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="corte">Corte de cabelo</SelectItem>
-                  <SelectItem value="barba">Barba completa</SelectItem>
-                  <SelectItem value="combo">Corte + Barba</SelectItem>
+                  {servicos?.map((serv: {
+                    id: string;
+                    name: string;
+                  }) => (
+                    <SelectItem key={serv.id} value={serv.id}>
+                      {serv.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              {errors.serviceId && (
-                <p className="text-sm text-red-500">{errors.serviceId.message}</p>
-              )}
+              {errors.serviceId && <p className="text-sm text-red-500">{errors.serviceId.message}</p>}
             </div>
 
             {/* Data */}
@@ -145,23 +145,25 @@ export default function NovoAgendamentoPage() {
             {/* Barbeiro */}
             <div className="space-y-1">
               <Label>Barbeiro</Label>
-              <Select onValueChange={(val) => setValue("barberId", val)}>
-                <SelectTrigger className={cn(errors.barberId && "border-red-500")}>
-                  <SelectValue placeholder="Selecione um barbeiro" />
+              <Select
+               onValueChange={(val) => setValue("barberId", val)}
+              >
+                <SelectTrigger className={cn(errors.barberId && "border-red-500", "w-full")}>
+                  <SelectValue placeholder={loadingBarbeiros ? "Carregando..." : "Selecione um barbeiro"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="joao">João</SelectItem>
-                  <SelectItem value="pedro">Pedro</SelectItem>
-                  <SelectItem value="lucas">Lucas</SelectItem>
+                  {barbeiros?.map((barb: { id: string; name: string }) => (
+                    <SelectItem key={barb.id} value={barb.id}>
+                      {barb.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              {errors.barberId && (
-                <p className="text-sm text-red-500">{errors.barberId.message}</p>
-              )}
+              {errors.barberId && <p className="text-sm text-red-500">{errors.barberId.message}</p>}
             </div>
 
             {/* Botão */}
-            <Button type="submit" className="w-full mt-2" disabled={isMutating}>
+            <Button type="submit" size='lg' className="w-full mt-2 rounded-full" disabled={isMutating}>
               {isMutating ? "Agendando..." : "Confirmar Agendamento"}
             </Button>
           </form>
