@@ -54,6 +54,66 @@ export default function Profile() {
     }
   };
 
+  const renderAgendamento = (agendamento: Agendamento) => {
+    const data = new Date(agendamento.date);
+    return (
+      <div
+        key={agendamento.id}
+        className="border rounded-lg p-3 text-sm shadow-sm bg-muted hover:bg-muted/80 transition-colors flex justify-between items-center"
+      >
+        <div className="space-y-1">
+          <p>
+            <strong>Serviço:</strong> {agendamento.serviceName}
+          </p>
+          <p>
+            <strong>Data:</strong>{" "}
+            {data.toLocaleDateString("pt-BR", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+            })}
+          </p>
+          <p>
+            <strong>Hora:</strong>{" "}
+            {data.toLocaleTimeString("pt-BR", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </p>
+        </div>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-auto text-red-600 hover:bg-red-100"
+            >
+              <Trash className="w-4 h-4" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Cancelar agendamento</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja cancelar este agendamento? Essa ação não
+                poderá ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Voltar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteAgendamento(agendamento.id)}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Confirmar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    );
+  };
+
   if (status === "loading" || isLoading) {
     return (
       <main className="p-4 max-w-md mx-auto">
@@ -87,7 +147,6 @@ export default function Profile() {
         </DropdownMenu>
       </div>
 
-      {/* Informações do cliente */}
       <Card>
         <CardHeader>
           <h2 className="text-lg font-semibold">Informações</h2>
@@ -99,7 +158,6 @@ export default function Profile() {
         </CardContent>
       </Card>
 
-      {/* Agendamentos futuros */}
       <Card>
         <CardHeader>
           <h2 className="text-lg font-semibold">Próximos Agendamentos</h2>
@@ -108,52 +166,7 @@ export default function Profile() {
           {usuario?.appointmentsAsClient?.length === 0 ? (
             <p>Você não possui agendamentos futuros.</p>
           ) : (
-            usuario?.appointmentsAsClient.map((a: Agendamento) => {
-              const data = new Date(a.date);
-              return (
-                <div
-                  key={a.id}
-                  className="border rounded-lg p-3 text-sm shadow-sm bg-muted hover:bg-muted/80 transition-colors flex justify-between items-center"
-                >
-                  <div className="space-y-1">
-                    <p><strong>Serviço:</strong> {a.serviceName}</p>
-                    <p><strong>Data:</strong> {data.toLocaleDateString("pt-BR", {
-                      weekday: "long",
-                      day: "numeric",
-                      month: "long",
-                    })}</p>
-                    <p><strong>Hora:</strong> {data.toLocaleTimeString("pt-BR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}</p>
-                  </div>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="ml-auto text-red-600 hover:bg-red-100">
-                        <Trash className="w-4 h-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Cancelar agendamento</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Tem certeza que deseja cancelar este agendamento? Essa ação não poderá ser desfeita.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Voltar</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => deleteAgendamento(a.id)}
-                          className="bg-red-600 hover:bg-red-700"
-                        >
-                          Confirmar
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              );
-            })
+            usuario?.appointmentsAsClient.map(renderAgendamento)
           )}
         </CardContent>
       </Card>
