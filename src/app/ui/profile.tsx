@@ -127,59 +127,69 @@ export default function Profile() {
   }
 
   return (
-    <main className="p-4 max-w-md mx-auto space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Meu Perfil</h1>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <div className="flex items-center gap-2 cursor-pointer">
-              <UserAvatar session={session} />
-            </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-            side="bottom"
-            align="end"
-            sideOffset={4}
-          >
-            <DropdownMenuItem
-              onClick={() => signOut()}
+    <>
+      <main className="p-4 max-w-md mx-auto space-y-6">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-2xl font-bold">Meu Perfil</h1>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center gap-2 cursor-pointer">
+                <UserAvatar session={session} />
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+              side="bottom"
+              align="end"
+              sideOffset={4}
             >
-              Sair
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+              <DropdownMenuItem
+                onClick={() => signOut()}
+              >
+                Sair
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <h2 className="text-lg font-semibold">Informações</h2>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <p><strong>Nome:</strong> {session?.user?.name}</p>
-          <p><strong>Email:</strong> {session?.user?.email}</p>
-          <Button className="mt-4 w-full">Editar Perfil</Button>
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader>
+            <h2 className="text-lg font-semibold">Informações</h2>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p><strong>Nome:</strong> {session?.user?.name}</p>
+            <p><strong>Email:</strong> {session?.user?.email}</p>
+            <Button className="mt-4 w-full">Editar Perfil</Button>
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <h2 className="text-lg font-semibold">Próximos Agendamentos</h2>
-          <Link href="/agendar">
-            <Button variant="default" size="sm" className="flex items-center gap-2">
-              <CalendarPlus className="w-4 h-4" />
-              Agendar
-            </Button>
-          </Link>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {usuario?.appointmentsAsClient?.length === 0 ? (
-            <p>Você não possui agendamentos futuros.</p>
-          ) : (
-            usuario?.appointmentsAsClient.map(renderAgendamento)
-          )}
-        </CardContent>
-      </Card>
-    </main>
+        <Card>
+          <CardHeader className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Próximos Agendamentos</h2>
+            <Link href="/agendar" className="hidden md:block">
+              <Button variant="default" size="sm" className="flex items-center gap-2">
+                <CalendarPlus className="w-4 h-4" />
+                Agendar
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {usuario?.appointmentsAsClient?.length === 0 ? (
+              <p>Você não possui agendamentos futuros.</p>
+            ) : (
+              usuario?.appointmentsAsClient.map(renderAgendamento)
+            )}
+          </CardContent>
+        </Card>
+      </main>
+      <Link href="/agendar" className="fixed bottom-4 left-4 right-4 z-50 md:hidden">
+        <Button
+          className="w-full rounded-full shadow-lg flex items-center justify-center gap-2 text-base"
+        >
+          <CalendarPlus className="w-4 h-4" />
+          Agendar
+        </Button>
+      </Link>
+    </>
   );
 }
