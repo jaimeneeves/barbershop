@@ -59,7 +59,7 @@ export default function Profile() {
     return (
       <div
         key={agendamento.id}
-        className="border rounded-lg p-3 text-sm shadow-sm bg-muted hover:bg-muted/80 transition-colors flex justify-between items-center"
+        className="relative group border rounded-lg p-3 text-sm shadow-sm bg-muted hover:bg-muted/80 transition-colors"
       >
         <div className="space-y-1">
           <p>
@@ -81,37 +81,40 @@ export default function Profile() {
             })}
           </p>
         </div>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="ml-auto text-red-600 hover:bg-red-100"
-            >
-              <Trash className="w-4 h-4" />
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Cancelar agendamento</AlertDialogTitle>
-              <AlertDialogDescription>
-                Tem certeza que deseja cancelar este agendamento? Essa ação não
-                poderá ser desfeita.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Voltar</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => deleteAgendamento(agendamento.id)}
-                className="bg-red-600 hover:bg-red-700"
+        <div className="absolute top-2 right-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-red-600 hover:bg-red-100"
               >
-                Confirmar
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+                <Trash className="w-4 h-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Cancelar agendamento</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Tem certeza que deseja cancelar este agendamento? Essa ação não
+                  poderá ser desfeita.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Voltar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => deleteAgendamento(agendamento.id)}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  Confirmar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
     );
+
   };
 
   if (status === "loading" || isLoading) {
