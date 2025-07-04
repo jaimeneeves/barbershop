@@ -58,8 +58,6 @@ export default function Profile() {
     (a: Agendamento) => new Date(a.date).getTime() < now.getTime()
   );
 
-  console.log('Agendamentos Futuros:', agendamentosFuturos);
-
   const deleteAgendamento = async (id: number) => {
     try {
       await deleteFetcher(`/api/appointments/${id}`);
