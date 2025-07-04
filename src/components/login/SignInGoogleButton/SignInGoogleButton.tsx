@@ -12,7 +12,7 @@ export default function SignInGoogleButton() {
    const handleLogin = async () => {
     setLoading(true);
     try {
-      await signIn('google');
+      await signIn('google', { redirectTo: "/perfil" });
     } catch (error) {
       console.error('Erro ao fazer login:', error);
       setLoading(false);
