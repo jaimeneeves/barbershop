@@ -5,6 +5,35 @@ import { Button } from "@/components/ui/button";
 import { useSession, signOut } from "next-auth/react"
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
+import UserAvatar from "@/components/userAvatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
+import { Trash } from "lucide-react";
+import { mutate } from "swr";
+import { toast } from "sonner";
+import { deleteFetcher } from '@/lib/fetcher'
+
+type Agendamento = {
+  id: number;
+  date: string;
+  serviceName: string;
+};
+
 
 export default function Profile() {
   const { data: session, status  } = useSession()
@@ -13,6 +42,17 @@ export default function Profile() {
     status === "authenticated" ? "/api/profile" : null,
     fetcher
   );
+
+  const deleteAgendamento = async (id: number) => {
+    try {
+      await deleteFetcher(`/api/appointments/${id}`);
+      mutate("/api/profile");
+      toast.success('Agendamento cancelado com sucesso!');
+    } catch (error) {
+      console.error('Failed to delete author', error);
+      toast.error('Erro ao cancelar agendamento. Tente novamente mais tarde.');
+    }
+  };
 
   if (status === "loading" || isLoading) {
     return (
@@ -24,16 +64,27 @@ export default function Profile() {
 
   return (
     <main className="p-4 max-w-md mx-auto space-y-6">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Meu Perfil</h1>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => signOut()}
-          className="rounded-full"
-        >
-          Sair
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <div className="flex items-center gap-2 cursor-pointer">
+              <UserAvatar session={session} />
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+            side="bottom"
+            align="end"
+            sideOffset={4}
+          >
+            <DropdownMenuItem
+              onClick={() => signOut()}
+            >
+              Sair
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Informações do cliente */}
@@ -55,29 +106,51 @@ export default function Profile() {
         </CardHeader>
         <CardContent className="space-y-3">
           {usuario?.appointmentsAsClient?.length === 0 ? (
-            <p>Você não possui appointmentsAsClient futuros.</p>
+            <p>Você não possui agendamentos futuros.</p>
           ) : (
-            usuario?.appointmentsAsClient.map((a: {
-              id: string;
-              date: string;
-              serviceName: string;
-            }) => {
+            usuario?.appointmentsAsClient.map((a: Agendamento) => {
               const data = new Date(a.date);
               return (
                 <div
                   key={a.id}
-                  className="border rounded-lg p-3 text-sm shadow-sm bg-muted"
+                  className="border rounded-lg p-3 text-sm shadow-sm bg-muted hover:bg-muted/80 transition-colors flex justify-between items-center"
                 >
-                  <p><strong>Serviço:</strong> {a.serviceName}</p>
-                  <p><strong>Data:</strong> {data.toLocaleDateString("pt-BR", {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "long",
-                  })}</p>
-                  <p><strong>Hora:</strong> {data.toLocaleTimeString("pt-BR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}</p>
+                  <div className="space-y-1">
+                    <p><strong>Serviço:</strong> {a.serviceName}</p>
+                    <p><strong>Data:</strong> {data.toLocaleDateString("pt-BR", {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                    })}</p>
+                    <p><strong>Hora:</strong> {data.toLocaleTimeString("pt-BR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}</p>
+                  </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="icon" className="ml-auto text-red-600 hover:bg-red-100">
+                        <Trash className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Cancelar agendamento</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tem certeza que deseja cancelar este agendamento? Essa ação não poderá ser desfeita.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Voltar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => deleteAgendamento(a.id)}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          Confirmar
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               );
             })
