@@ -23,10 +23,11 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { Trash } from "lucide-react";
+import { Trash, CalendarPlus } from "lucide-react";
 import { mutate } from "swr";
 import { toast } from "sonner";
 import { deleteFetcher } from '@/lib/fetcher'
+import Link from "next/link";
 
 type Agendamento = {
   id: number;
@@ -162,8 +163,14 @@ export default function Profile() {
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <h2 className="text-lg font-semibold">Próximos Agendamentos</h2>
+          <Link href="/agendar">
+            <Button variant="default" size="sm" className="flex items-center gap-2">
+              <CalendarPlus className="w-4 h-4" />
+              Agendar
+            </Button>
+          </Link>
         </CardHeader>
         <CardContent className="space-y-3">
           {usuario?.appointmentsAsClient?.length === 0 ? (
