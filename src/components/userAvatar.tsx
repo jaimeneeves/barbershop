@@ -2,7 +2,6 @@ import type { Session } from "next-auth"
  import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function UserAvatar({ session }: { session: Session | null }) {
-  // console.log("Session data:", session)
   return (
     <div>
       <Avatar className="w-10 h-10">
