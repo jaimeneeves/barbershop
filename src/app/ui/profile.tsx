@@ -48,12 +48,14 @@ export default function Profile() {
     fetcher
   );
 
+  const now = new Date()
+
   const agendamentosFuturos = usuario?.appointmentsAsClient?.filter(
-    (a: Agendamento) => new Date(a.date) >= new Date()
+    (a: Agendamento) => new Date(a.date).getTime() >= now.getTime()
   );
 
   const agendamentosAnteriores = usuario?.appointmentsAsClient?.filter(
-    (a: Agendamento) => new Date(a.date) < new Date()
+    (a: Agendamento) => new Date(a.date).getTime() < now.getTime()
   );
 
   console.log('Agendamentos Futuros:', agendamentosFuturos);
@@ -69,7 +71,7 @@ export default function Profile() {
     }
   };
 
-  const renderAgendamento = (agendamento: Agendamento) => {
+  const renderAgendamento = (agendamento: Agendamento, canCancel = true) => {
     const data = new Date(agendamento.date);
     return (
       <div
@@ -99,37 +101,39 @@ export default function Profile() {
             })}
           </p>
         </div>
-        <div className="absolute top-2 right-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-red-600 hover:bg-red-100"
-              >
-                <Trash className="w-4 h-4" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Cancelar agendamento</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Tem certeza que deseja cancelar este agendamento? Essa ação não
-                  poderá ser desfeita.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Voltar</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => deleteAgendamento(agendamento.id)}
-                  className="bg-red-600 hover:bg-red-700"
+        {canCancel && (
+          <div className="absolute top-2 right-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-red-600 hover:bg-red-100"
                 >
-                  Confirmar
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+                  <Trash className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Cancelar agendamento</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tem certeza que deseja cancelar este agendamento? Essa ação não
+                    poderá ser desfeita.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Voltar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => deleteAgendamento(agendamento.id)}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Confirmar
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        )}
       </div>
     );
   };
@@ -193,7 +197,7 @@ export default function Profile() {
             {agendamentosFuturos?.length === 0 ? (
               <p>Você não possui agendamentos futuros.</p>
             ) : (
-              agendamentosFuturos.map(renderAgendamento)
+              agendamentosFuturos.map((a:Agendamento) => renderAgendamento(a, true))
             )}
           </CardContent>
         </Card>
@@ -206,7 +210,7 @@ export default function Profile() {
             {agendamentosAnteriores?.length === 0 ? (
               <p>Você ainda não possui agendamentos anteriores.</p>
             ) : (
-              agendamentosAnteriores.map(renderAgendamento)
+              agendamentosAnteriores.map((a:Agendamento) => renderAgendamento(a, false))
             )}
           </CardContent>
         </Card>
