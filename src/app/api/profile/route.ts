@@ -17,11 +17,11 @@ export async function GET() {
         name: true,
         email: true,
         appointmentsAsClient: {
-          where: {
-            date: {
-              gte: startOfToday(),
-            },
-          },
+          // where: {
+          //   date: {
+          //     gte: startOfToday(),
+          //   },
+          // },
           orderBy: {
             date: "asc",
           },

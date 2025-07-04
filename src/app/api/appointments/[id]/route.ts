@@ -21,6 +21,11 @@ export async function DELETE(
       return jsonResponse({ error: "Agendamento não encontrado ou não permitido" }, 403);
     }
 
+    const now = new Date();
+    if (new Date(agendamento.date) <= now) {
+      return jsonResponse({ error: "Somente agendamentos futuros podem ser cancelados" }, 403);
+    }
+
     await prisma.appointment.delete({
       where: { id: Number(params.id) },
     });

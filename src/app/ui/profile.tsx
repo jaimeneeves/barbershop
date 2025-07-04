@@ -44,6 +44,15 @@ export default function Profile() {
     fetcher
   );
 
+  const agendamentosFuturos = usuario?.appointmentsAsClient?.filter(
+    (a: Agendamento) => new Date(a.date) >= new Date()
+  );
+
+  const agendamentosAnteriores = usuario?.appointmentsAsClient?.filter(
+    (a: Agendamento) => new Date(a.date) < new Date()
+  );
+
+
   const deleteAgendamento = async (id: number) => {
     try {
       await deleteFetcher(`/api/appointments/${id}`);
@@ -115,7 +124,6 @@ export default function Profile() {
         </div>
       </div>
     );
-
   };
 
   if (status === "loading" || isLoading) {
@@ -174,13 +182,27 @@ export default function Profile() {
             </Link>
           </CardHeader>
           <CardContent className="space-y-3">
-            {usuario?.appointmentsAsClient?.length === 0 ? (
+            {agendamentosFuturos?.length === 0 ? (
               <p>Você não possui agendamentos futuros.</p>
             ) : (
-              usuario?.appointmentsAsClient.map(renderAgendamento)
+              agendamentosFuturos.map(renderAgendamento)
             )}
           </CardContent>
         </Card>
+        
+        <Card>
+          <CardHeader>
+            <h2 className="text-lg font-semibold">Agendamentos Anteriores</h2>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {agendamentosAnteriores?.length === 0 ? (
+              <p>Você ainda não possui agendamentos anteriores.</p>
+            ) : (
+              agendamentosAnteriores.map(renderAgendamento)
+            )}
+          </CardContent>
+        </Card>
+
       </main>
       <Link href="/agendar" className="fixed bottom-4 left-4 right-4 z-50 md:hidden">
         <Button
