@@ -29,6 +29,12 @@ export async function GET() {
             id: true,
             date: true,
             serviceName: true,
+            barber: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },

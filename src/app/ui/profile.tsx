@@ -33,6 +33,10 @@ type Agendamento = {
   id: number;
   date: string;
   serviceName: string;
+  barber: {
+    id: string;
+    name: string;
+  };
 };
 
 
@@ -52,6 +56,7 @@ export default function Profile() {
     (a: Agendamento) => new Date(a.date) < new Date()
   );
 
+  console.log('Agendamentos Futuros:', agendamentosFuturos);
 
   const deleteAgendamento = async (id: number) => {
     try {
@@ -74,6 +79,9 @@ export default function Profile() {
         <div className="space-y-1">
           <p>
             <strong>Serviço:</strong> {agendamento.serviceName}
+          </p>
+          <p>
+            <strong>Barbeiro:</strong> {agendamento.barber.name}
           </p>
           <p>
             <strong>Data:</strong>{" "}
