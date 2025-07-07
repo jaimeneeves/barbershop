@@ -6,6 +6,7 @@ import { fetcher } from "@/lib/fetcher";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import UserAvatar from "@/components/userAvatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Smile } from "lucide-react"
 
 type Agendamento = {
   id: string;
@@ -20,8 +21,6 @@ type Agendamento = {
 export default function BarbeiroDashboard() {
   const { data: session, status } = useSession();
 
-  console.log("Session data:", session);
-
   const { data: barbeiro, isLoading } = useSWR(
     status === "authenticated" ? "/api/barbers/profile" : null,
     fetcher
@@ -35,34 +34,50 @@ export default function BarbeiroDashboard() {
     return <main className="p-4 max-w-md mx-auto">Carregando...</main>;
   }
 
+  if (!session) {
+    return <main className="p-4 max-w-md mx-auto text-center text-red-500">
+      Sessão inválida. Por favor, faça login novamente.
+    </main>
+  }
+
   return (
     <main className="p-4 max-w-md mx-auto space-y-6">
-      {/* Topo */}
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Painel do Barbeiro</h1>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <div className="flex items-center gap-2 cursor-pointer">
-              <UserAvatar session={session} />
-            </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side="bottom" align="end" sideOffset={4}>
-            <DropdownMenuItem onClick={() => signOut()}>
-              Sair
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-2xl font-bold">Painel do Barbeiro</h1>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center gap-2 cursor-pointer">
+                <UserAvatar session={session} />
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="bottom" align="end" sideOffset={4}>
+              <DropdownMenuItem
+                onClick={() => {
+                  signOut({ callbackUrl: "/barbeiro/login" });
+                }}
+              >
+                Sair
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Smile className="w-4 h-4 text-primary" />
+          <span>Bem-vindo, <strong>{session?.user?.name}</strong> 👋</span>
+        </div>
       </div>
 
-      {/* Informações do barbeiro */}
       <Card>
         <CardHeader>
           <h2 className="text-lg font-semibold">Informações</h2>
         </CardHeader>
-        {/* <CardContent className="space-y-2">
+        <CardContent className="space-y-2">
           <p><strong>Nome:</strong> {barbeiro.name}</p>
           <p><strong>Email:</strong> {barbeiro.email}</p>
-        </CardContent> */}
+        </CardContent>
       </Card>
 
       {/* Agendamentos */}
@@ -74,18 +89,17 @@ export default function BarbeiroDashboard() {
           {agendamentosFuturos?.length === 0 ? (
             <p>Nenhum atendimento agendado.</p>
           ) : (
-            <></>
-            // agendamentosFuturos.map((a: Agendamento) => {
-            //   const data = new Date(a.date);
-            //   return (
-            //     <div key={a.id} className="border rounded-lg p-3 bg-muted text-sm space-y-1">
-            //       <p><strong>Cliente:</strong> {a.client.name}</p>
-            //       <p><strong>Serviço:</strong> {a.serviceName}</p>
-            //       <p><strong>Data:</strong> {data.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}</p>
-            //       <p><strong>Hora:</strong> {data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>
-            //     </div>
-            //   );
-            // })
+            agendamentosFuturos.map((a: Agendamento) => {
+              const data = new Date(a.date);
+              return (
+                <div key={a.id} className="border rounded-lg p-3 bg-muted text-sm space-y-1">
+                  <p><strong>Cliente:</strong> {a.client.name}</p>
+                  <p><strong>Serviço:</strong> {a.serviceName}</p>
+                  <p><strong>Data:</strong> {data.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}</p>
+                  <p><strong>Hora:</strong> {data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>
+                </div>
+              );
+            })
           )}
         </CardContent>
       </Card>
