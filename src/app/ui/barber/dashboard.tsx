@@ -4,6 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import UserAvatar from "@/components/userAvatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -17,7 +18,7 @@ type Agendamento = {
   };
 };
 
-export default function BarbeiroDashboard() {
+export default function BarberDashboard() {
   const { data: session, status } = useSession();
 
   console.log("Session data:", session);

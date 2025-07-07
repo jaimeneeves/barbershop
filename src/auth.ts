@@ -7,7 +7,22 @@ import { z } from 'zod';
 import bcrypt from 'bcrypt'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  debug: true,
+  logger: {
+    error(code, ...message) {
+      console.log(code, message)
+    },
+    warn(code, ...message) {
+      console.log(code, message)
+    },
+    debug(code, ...message) {
+      console.log(code, message)
+    },
+  },
   adapter: PrismaAdapter(prisma),
+  session: {
+    strategy: "jwt",
+  },
   providers: [
     Google,
     Credentials({
@@ -30,7 +45,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           where: { email: email },
         });
 
-        if (!user || !user.password) return null
+        if (!user || !user.password) {
+          throw new Error("Usuário não encontrado ou sem senha")
+        }
 
         const passwordsMatch = await bcrypt.compare(password, user.password);
         if (!passwordsMatch) return null;

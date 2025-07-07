@@ -1,10 +1,8 @@
 'use client'
 
 import { useState } from "react"
-import useSWRMutation from "swr/mutation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
 import { z } from "zod";
 import { cn } from "@/lib/utils"
@@ -26,7 +24,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner"
-import { signIn } from "next-auth/react"
+import { signIn, SignInResponse } from "next-auth/react"
 
 const FormSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -38,19 +36,22 @@ export default function LoginBarber() {
   const router = useRouter()
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   })
 
   const onSubmit = async (formData: z.infer<typeof FormSchema>) => {
     setLoading(true)
     try {
       console.log("Dados do formulário:", formData)
-      // await trigger(formData)
-
       const result = await signIn("credentials", {
-        redirect: false,
+        redirect: true,
         email: formData.email,
         password: formData.password,
-      })
+        callbackUrl: "/barbeiro/dashboard",
+      }) as SignInResponse | undefined
 
       if (result?.error) {
         toast.error(`Erro ao fazer login: ${result.error}`)
@@ -88,7 +89,7 @@ export default function LoginBarber() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel htmlFor="email">Email</FormLabel>
                         <FormControl>
                           <Input
                             id="email"

@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/response";
-import { auth } from "auth";
+import { auth } from "@/auth";
 
 export async function DELETE(
   req: Request,

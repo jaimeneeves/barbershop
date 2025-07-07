@@ -1,4 +1,5 @@
-import LoginBarber from "@/components/barber/LoginBarber"
+import LoginBarber from "@/components/Barber/LoginBarber"
+
 export default function LoginPage() {
   return (
     <LoginBarber />

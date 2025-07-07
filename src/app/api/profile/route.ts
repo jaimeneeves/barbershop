@@ -1,4 +1,4 @@
-import { auth } from "auth";
+import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/response";
 import { startOfToday } from "date-fns";
