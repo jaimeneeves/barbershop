@@ -86,8 +86,13 @@ export default function BarberAvailabilityPage() {
       await deleteFetcher(`/api/barbers/availability/${id}`);
       toast.success("Removido com sucesso!");
       mutate("/api/barbers/availability");
-    } catch {
-      toast.error("Erro ao remover");
+    } catch (error)  {
+      let errorMessage = "Erro desconhecido";
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const errObj = error as { response?: { error?: string } };
+        errorMessage = errObj.response?.error || errorMessage;
+      }
+      toast.error(`Erro ao agendar: ${errorMessage}`);
     }
   };
 
