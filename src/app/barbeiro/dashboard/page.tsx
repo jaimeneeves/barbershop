@@ -6,7 +6,7 @@ import { fetcher } from "@/lib/fetcher";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import UserAvatar from "@/components/userAvatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Smile } from "lucide-react"
+import { Smile, Clock4 } from "lucide-react"
 
 type Agendamento = {
   id: string;
@@ -43,7 +43,7 @@ export default function BarbeiroDashboard() {
   return (
     <main className="p-4 max-w-md mx-auto space-y-6">
       
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-2xl font-bold">Painel do Barbeiro</h1>
           <DropdownMenu>
@@ -63,10 +63,19 @@ export default function BarbeiroDashboard() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        
+
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Smile className="w-4 h-4 text-primary" />
           <span>Bem-vindo, <strong>{session?.user?.name}</strong> 👋</span>
+        </div>
+
+        <div>
+          <a href="/barbeiro/horarios">
+            <button className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-full transition">
+              <Clock4 className="w-4 h-4" />
+              Gerenciar Horários Disponíveis
+            </button>
+          </a>
         </div>
       </div>
 
