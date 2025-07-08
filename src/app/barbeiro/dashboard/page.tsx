@@ -12,7 +12,7 @@ type Agendamento = {
   id: string;
   date: string;
   serviceName: string;
-  client: {
+  user: {
     name: string;
     email: string;
   };
@@ -102,7 +102,7 @@ export default function BarbeiroDashboard() {
               const data = new Date(a.date);
               return (
                 <div key={a.id} className="border rounded-lg p-3 bg-muted text-sm space-y-1">
-                  <p><strong>Cliente:</strong> {a.client.name}</p>
+                  <p><strong>Cliente:</strong> {a?.user?.name}</p>
                   <p><strong>Serviço:</strong> {a.serviceName}</p>
                   <p><strong>Data:</strong> {data.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}</p>
                   <p><strong>Hora:</strong> {data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>
