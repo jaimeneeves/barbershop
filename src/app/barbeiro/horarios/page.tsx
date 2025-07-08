@@ -11,7 +11,7 @@ import {
   Card, CardContent, CardHeader,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, CalendarClock } from "lucide-react";
+import { Trash2, CalendarClock, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import useSWRMutation from "swr/mutation";
 import {
@@ -35,6 +35,7 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { useEffect } from "react";
+import { useRouter } from 'next/navigation';
 
 const diasSemana = [
   "Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira",
@@ -81,6 +82,7 @@ const availabilitySchema = z.object({
 type AvailabilityForm = z.infer<typeof availabilitySchema>;
 
 export default function BarberAvailabilityPage() {
+  const router = useRouter();
   const { data: session } = useSession();
   const { data: disponibilidades = [], isLoading } = useSWR("/api/barbers/availability", fetcher, {
     revalidateOnFocus: false,
@@ -130,8 +132,15 @@ export default function BarberAvailabilityPage() {
 
   return (
     <main className="p-4 max-w-md mx-auto space-y-6">
-      <div className="flex items-center gap-2 text-primary">
-        <CalendarClock className="w-5 h-5" />
+      <div className="flex items-center gap-3">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => router.back()}
+          className="rounded-full"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
         <h1 className="text-2xl font-bold">Gerenciar Horários Disponíveis</h1>
       </div>
 
