@@ -11,7 +11,7 @@ import {
   Card, CardContent, CardHeader,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, CalendarClock, ArrowLeft } from "lucide-react";
+import { Trash2, CalendarClock, ArrowLeft, CalendarDays, Clock3, Clock } from "lucide-react";
 import { toast } from "sonner";
 import useSWRMutation from "swr/mutation";
 import {
@@ -158,7 +158,10 @@ export default function BarberAvailabilityPage() {
                 name="dayOfWeek"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Dia da semana</FormLabel>
+                    <FormLabel className="flex items-center gap-2">
+                      <CalendarDays className="w-4 h-4" />
+                      Dia da semana
+                    </FormLabel>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {diasSemana.map((dia, idx) => {
                         const isSelected = field.value === idx;
@@ -192,7 +195,10 @@ export default function BarberAvailabilityPage() {
                 name="startTime"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Início</FormLabel>
+                    <FormLabel className="flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      Início
+                    </FormLabel>
                     <div className="grid grid-cols-3 gap-2">
                       {gerarHorarios().map((hora) => (
                         <Button
@@ -228,7 +234,10 @@ export default function BarberAvailabilityPage() {
                   );
                   return (
                     <FormItem>
-                      <FormLabel>Fim</FormLabel>
+                      <FormLabel className="flex items-center gap-2">
+                        <Clock3 className="w-4 h-4" />
+                        Fim
+                      </FormLabel>
                       <div className="grid grid-cols-3 gap-2">
                         {horariosFiltrados.length === 0 && (
                           <p className="col-span-3 text-sm text-muted-foreground">
