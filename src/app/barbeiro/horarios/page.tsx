@@ -25,6 +25,19 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
+
+
 const diasSemana = [
   "Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira",
   "Quinta-feira", "Sexta-feira", "Sábado"
@@ -103,7 +116,7 @@ export default function BarberAvailabilityPage() {
                     <Select onValueChange={field.onChange} defaultValue={field.value ? String(field.value) : undefined}>
                       <FormControl>
                         <SelectTrigger className={cn(form.formState.errors.dayOfWeek && "border-red-500", "w-full")}>
-                          <SelectValue placeholder="Selecione um barbeiro" />
+                          <SelectValue placeholder="Selecione o dia da semana" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -185,13 +198,30 @@ export default function BarberAvailabilityPage() {
                 <div>
                   <p><strong>{diasSemana[d.dayOfWeek]}</strong>: {d.startTime} - {d.endTime}</p>
                 </div>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => removerDisponibilidade(d.id)}
-                >
-                  <Trash2 className="w-4 h-4 text-red-600" />
-                </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="icon" variant="ghost">
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Remover disponibilidade</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tem certeza que deseja remover esta disponibilidade? Essa ação não poderá ser desfeita.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-red-600 hover:bg-red-700"
+                          onClick={() => removerDisponibilidade(d.id)}
+                        >
+                          Confirmar
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
               </div>
             ))
           )}

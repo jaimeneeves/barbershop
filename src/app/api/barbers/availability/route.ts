@@ -33,6 +33,17 @@ async function createAvailability(req: Request) {
     return jsonResponse({ error: "Dados inválidos" }, 400);
   }
 
+  const existingAvailability = await prisma.barberAvailability.findFirst({
+    where: {
+      barberId: user.id,
+      dayOfWeek,
+    },
+  });
+
+  if (existingAvailability) {
+    return jsonResponse({ error: "Disponibilidade já cadastrada para este dia da semana" }, 400);
+  }
+
   const created = await prisma.barberAvailability.create({
     data: {
       dayOfWeek,
