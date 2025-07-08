@@ -9,20 +9,21 @@ async function createAvailability(req: Request) {
   }
   
   const body = await req.json();
+  const { dayOfWeek, startTime, endTime, email } = body;
 
-  if (!session?.user?.email) {
+  const userEmail = email || session.user?.email;
+
+  if (!userEmail) {
     return jsonResponse({ error: "Email não encontrado" }, 400);
   }
 
   const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { email: userEmail },
   });
 
   if (!user || user.role !== "BARBER") {
     return jsonResponse({ error: "Access denied" }, 403);
   }
-
-  const { dayOfWeek, startTime, endTime } = body;
 
   if (
     typeof dayOfWeek !== "number" ||
