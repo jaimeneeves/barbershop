@@ -74,8 +74,8 @@ export default function BarberAvailabilityPage() {
     try {
       await trigger(data);
       toast.success("Disponibilidade adicionada!");
+      form.reset();
       mutate("/api/barbers/availability");
-      // reset();
     } catch (error) {
       toast.error("Erro ao adicionar disponibilidade");
     }
@@ -113,18 +113,26 @@ export default function BarberAvailabilityPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Dia da semana</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value ? String(field.value) : undefined}>
-                      <FormControl>
-                        <SelectTrigger className={cn(form.formState.errors.dayOfWeek && "border-red-500", "w-full")}>
-                          <SelectValue placeholder="Selecione o dia da semana" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {diasSemana.map((dia, idx) => (
-                          <SelectItem key={idx} value={String(idx)}>{dia}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {diasSemana.map((dia, idx) => {
+                        const isSelected = field.value === idx;
+                        return (
+                          <Button
+                            key={idx}
+                            type="button"
+                            onClick={() => field.onChange(idx)}
+                            className={cn(
+                              "text-sm w-full",
+                              isSelected
+                                ? "bg-blue-600 text-white hover:bg-blue-700"
+                                : "bg-blue-100 text-blue-800 hover:bg-blue-200"
+                            )}
+                          >
+                            {dia}
+                          </Button>
+                        );
+                      })}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -175,7 +183,7 @@ export default function BarberAvailabilityPage() {
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+            <Button type="submit" className="w-full bg-blue-600 text-white hover:bg-blue-700" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting ? "Salvando..." : "Adicionar"}
             </Button>
           </form>
