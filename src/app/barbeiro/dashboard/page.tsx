@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import UserAvatar from "@/components/userAvatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Smile, Clock4 } from "lucide-react"
+import { Button } from "@/components/ui/button";
 
 type Agendamento = {
   id: string;
@@ -69,12 +70,18 @@ export default function BarbeiroDashboard() {
           <span>Bem-vindo, <strong>{session?.user?.name}</strong> 👋</span>
         </div>
 
-        <div>
+        <div className="flex gap-2">
           <a href="/barbeiro/horarios">
-            <button className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-full transition">
+            <Button className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-full transition">
               <Clock4 className="w-4 h-4" />
-              Gerenciar Horários Disponíveis
-            </button>
+              Gerenciar Horários
+            </Button>
+          </a>
+          <a href="/barbeiro/atendimentos">
+            <Button className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-full transition">
+              <Clock4 className="w-4 h-4" />
+              Ver Atendimentos
+            </Button>
           </a>
         </div>
       </div>
