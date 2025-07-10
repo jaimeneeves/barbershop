@@ -69,7 +69,6 @@ export default function AppointmentsPage({
   const handleFilterChange = (newFilter: Filter) => {
     const params = new URLSearchParams(searchParams.toString());
 
-    // Atualiza os parâmetros dinamicamente com base nos campos do filtro
     Object.entries(newFilter).forEach(([key, value]) => {
       if (value) {
         params.set(key, value.toString());
@@ -78,7 +77,6 @@ export default function AppointmentsPage({
       }
     });
 
-    // Atualiza a URL com os novos parâmetros
     replace(`${pathname}?${params.toString()}`);
   };
 
@@ -232,7 +230,9 @@ export default function AppointmentsPage({
         <Button
           variant="outline"
           size="icon"
-          onClick={() => router.back()}
+          onClick={() => {
+            router.push('/barbeiro/dashboard');
+          }}
           className="rounded-full"
         >
           <ArrowLeft className="h-5 w-5" />
