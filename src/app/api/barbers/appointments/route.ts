@@ -1,21 +1,32 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/response";
-import { startOfToday } from "date-fns";
+import { AppointmentStatus } from "@prisma/client";
+import { startOfToday, endOfToday } from "date-fns"
 
-export async function GET() {
+const todayStart = startOfToday();
+const todayEnd = endOfToday();
+
+export async function GET(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return jsonResponse({ error: "Não autenticado" }, 401);
   }
 
   try {
+    const { searchParams } = new URL(request.url);
+    const sortBy = searchParams.get("sortBy") || null;
+    const status = searchParams.get("status") || null;
+
+    const whereCondition = {
+      ...(sortBy === 'today' && { date: { gte: todayStart, lte: todayEnd } }),
+      ...(status && { status: status.toLocaleUpperCase() as AppointmentStatus }),
+    };
+
     const barbeiro = await prisma.appointment.findMany({
       where: {
         barberId: session.user.id,
-        // date: {
-        //   gte: startOfToday(),
-        // },
+        ...whereCondition,
       },
       orderBy: {
         date: "asc",
@@ -35,10 +46,10 @@ export async function GET() {
     });
 
     if (!barbeiro || barbeiro.length === 0) {
-      return jsonResponse({ error: "Nenhum agendamento encontrado" }, 404);
+      return jsonResponse({ error: "Nenhum agendamento encontrado" }, 200);
     }
 
-    return jsonResponse(barbeiro, 200);
+    return jsonResponse({data: barbeiro}, 200);
 
   } catch (error) {
     console.error(error);
