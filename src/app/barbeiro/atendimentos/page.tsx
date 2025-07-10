@@ -6,8 +6,9 @@ import { fetcher } from "@/lib/fetcher";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Check, Play } from "lucide-react";
+import { ArrowLeft, Check, Loader2, Play } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 
 type Agendamento = {
   id: number;
@@ -22,41 +23,130 @@ type Agendamento = {
 
 export default function AtendimentosPage() {
   const router = useRouter();
+  const [ loading, setLoading] = useState(false);
   const { data: session } = useSession();
 
   const { data: appointments, isLoading } = useSWR(
     session?.user ? "/api/barbers/appointments" : null,
-    fetcher
+    fetcher, {
+      revalidateOnFocus: false,
+    }
   );
 
   const atualizarStatus = async (id: number, status: Agendamento["status"]) => {
     try {
+      setLoading(true);
       await fetch(`/api/appointments/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
       toast.success("Status atualizado!");
-      mutate("/api/barbers/profile");
+      mutate("/api/barbers/appointments");
     } catch {
       toast.error("Erro ao atualizar status");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const renderStatus = (status: Agendamento["status"]) => {
-    const cores = {
+  const cores = useMemo(
+    () => ({
       SCHEDULED: "bg-yellow-200 text-yellow-800",
       IN_PROGRESS: "bg-blue-200 text-blue-800",
       COMPLETED: "bg-green-200 text-green-800",
       CANCELED: "bg-red-200 text-red-800",
-    };
+    }),
+    []
+  );
+
+  const renderStatus = (status: Agendamento["status"]) => (
+    <Badge className={cores[status]}>
+      {{
+        SCHEDULED: "Agendado",
+        IN_PROGRESS: "Em andamento",
+        COMPLETED: "Concluído",
+        CANCELED: "Cancelado",
+      }[status]}
+    </Badge>
+  );
+
+  const AtendimentoCard = ({ appointment }: { appointment: Agendamento }) => {
+    const data = new Date(appointment.date);
+
     return (
-      <Badge className={cores[status]}>
-        {status === "SCHEDULED" && "Agendado"}
-        {status === "IN_PROGRESS" && "Em andamento"}
-        {status === "COMPLETED" && "Concluído"}
-        {status === "CANCELED" && "Cancelado"}
-      </Badge>
+      <div
+        key={appointment.id}
+        className="border rounded-lg p-3 text-sm shadow-sm bg-muted space-y-2"
+      >
+        <div className="space-y-1">
+          <p>
+            <strong>Cliente:</strong> {appointment.user.name}
+          </p>
+          <p>
+            <strong>Serviço:</strong> {appointment.serviceName}
+          </p>
+          <p>
+            <strong>Data/Hora:</strong>{" "}
+            {data.toLocaleTimeString("pt-BR", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </p>
+        </div>
+
+        <div className="flex justify-between items-center mt-2">
+          {renderStatus(appointment.status)}
+
+          {appointment.status === "SCHEDULED" && (
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={() => atualizarStatus(appointment.id, "IN_PROGRESS")}
+              className="rounded-full"
+              disabled={loading}
+            >
+              {
+                loading ? (
+                   <span className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Aguarde...
+                  </span>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 mr-1" />
+                    Iniciar
+                  </>
+                )
+              }
+            </Button>
+          )}
+
+          {appointment.status === "IN_PROGRESS" && (
+            <Button
+              size="sm"
+              onClick={() => atualizarStatus(appointment.id, "COMPLETED")}
+              className="bg-green-600 text-white hover:bg-green-700"
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Aguarde...
+                </span>
+              ) : (
+                <>
+                  <Check className="w-4 h-4 mr-1" />
+                  Finalizar
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+      </div>
     );
   };
 
@@ -80,53 +170,9 @@ export default function AtendimentosPage() {
         <p>Nenhum atendimento encontrado.</p>
       ) : (
         <div className="space-y-4">
-          {appointments?.map((a:any) => {
-            const data = new Date(a.date);
-            return (
-              <div
-                key={a.id}
-                className="border rounded-lg p-3 text-sm shadow-sm bg-muted space-y-2"
-              >
-                <div className="space-y-1">
-                  <p><strong>Cliente:</strong> {a.user.name}</p>
-                  <p><strong>Serviço:</strong> {a.serviceName}</p>
-                  <p><strong>Data/Hora:</strong> {data.toLocaleTimeString("pt-BR", {
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}</p>
-                </div>
-
-                <div className="flex justify-between items-center mt-2">
-                  {renderStatus(a.status)}
-
-                  {a.status === "SCHEDULED" && (
-                    <Button
-                      size="sm"
-                      onClick={() => atualizarStatus(a.id, "IN_PROGRESS")}
-                      className="bg-blue-600 text-white hover:bg-blue-700"
-                    >
-                      <Play className="w-4 h-4 mr-1" />
-                      Iniciar
-                    </Button>
-                  )}
-
-                  {a.status === "IN_PROGRESS" && (
-                    <Button
-                      size="sm"
-                      onClick={() => atualizarStatus(a.id, "COMPLETED")}
-                      className="bg-green-600 text-white hover:bg-green-700"
-                    >
-                      <Check className="w-4 h-4 mr-1" />
-                      Finalizar
-                    </Button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          {appointments?.map((appointment: Agendamento) => (
+            <AtendimentoCard key={appointment.id} appointment={appointment} />
+          ))}
         </div>
       )}
     </main>

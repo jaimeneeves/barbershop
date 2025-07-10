@@ -62,7 +62,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const body = await req.json();
     const { status } = body;
 
-    if (!["SCHEDULED", "COMPLETED", "CANCELED"].includes(status)) {
+    if (!["SCHEDULED", "COMPLETED", "CANCELED", "IN_PROGRESS"].includes(status)) {
       return jsonResponse({ error: "Status inválido" }, 400);
     }
 
