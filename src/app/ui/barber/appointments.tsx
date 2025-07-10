@@ -6,7 +6,7 @@ import { fetcher } from "@/lib/fetcher";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Check, Loader2, Play, X } from "lucide-react";
+import { ArrowLeft, CalendarDays, Check, CheckCircle, Clock, Loader2, Play, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { PAGE_SIZE } from '@/utils/constants';
@@ -126,7 +126,10 @@ export default function AppointmentsPage({
     return (
       <div
         key={appointment.id}
-        className="border rounded-lg p-3 text-sm shadow-sm bg-muted space-y-2"
+        className={cn(
+          "rounded-xl p-4 text-sm border border-border shadow-sm transition-all space-y-2",
+          "hover:shadow-md hover:border-primary/30"
+        )}
       >
         <div className="space-y-1">
           <p>
@@ -249,6 +252,7 @@ export default function AppointmentsPage({
             }}
             title="Ordenar por hoje"
           >
+            <CalendarDays className="w-4 h-4" />
             Hoje
             {searchParams.get('sortBy') === 'today' && (
               <X size={16} />
@@ -277,11 +281,11 @@ export default function AppointmentsPage({
                   : 'Exibir todos os atendimentos'
             }
           >
-            {
-              value === 'SCHEDULED' ? 'Agendados' 
-              : value === 'COMPLETED' ? 'Concluídos'
-              : 'Em andamento'
-            }
+            <div className="flex items-center gap-2">
+              {value === 'SCHEDULED' && <Clock className="w-4 h-4" />}
+              {value === 'COMPLETED' && <CheckCircle className="w-4 h-4" />}
+              {value === 'SCHEDULED' ? 'Agendados' : 'Concluídos'}
+            </div>
             {
               searchParams.get('status') === value.toLocaleLowerCase() && (
                 <X size={16} />
