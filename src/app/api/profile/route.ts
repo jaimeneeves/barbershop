@@ -29,6 +29,7 @@ export async function GET() {
             id: true,
             date: true,
             serviceName: true,
+            status: true,
             barber: {
               select: {
                 id: true,
