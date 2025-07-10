@@ -2,18 +2,16 @@
 
 import { useSession } from "next-auth/react";
 import useSWR, { mutate } from "swr";
-import { fetcher, postFetcher, deleteFetcher } from "@/lib/fetcher";
+import { fetcher, deleteFetcher } from "@/lib/fetcher";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { cn } from "@/lib/utils";
 import {
   Card, CardContent, CardHeader,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, CalendarClock, ArrowLeft, CalendarDays, Clock3, Clock, CalendarPlus } from "lucide-react";
+import { Trash2, ArrowLeft, CalendarPlus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import Link from "next/link";
 
 import {
   AlertDialog,
@@ -26,7 +24,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
 
 const diasSemana = [
@@ -49,7 +47,7 @@ type AvailabilityForm = z.infer<typeof availabilitySchema>;
 
 export default function BarberAvailabilityPage() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const [loading, setLoading] = useState(false);
   const { data: disponibilidades = [], isLoading } = useSWR("/api/barbers/availability", fetcher, {
     revalidateOnFocus: false,
   });
@@ -90,7 +88,10 @@ export default function BarberAvailabilityPage() {
         <Button
           variant="outline"
           size="icon"
-          onClick={() => router.back()}
+          onClick={() => {
+            setLoading(true);
+            router.push("/barbeiro/dashboard");
+          }}
           className="rounded-full"
         >
           <ArrowLeft className="h-5 w-5" />
@@ -101,15 +102,25 @@ export default function BarberAvailabilityPage() {
       <Card>
         <CardHeader className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Suas Disponibilidades</h2>
-            <Link
-              href="/barbeiro/horarios/novo"
-              className="hidden md:block"
-            >
-              <Button variant="primary" size="sm" className="flex items-center gap-2 rounded-full">
-                <CalendarPlus className="w-4 h-4" />
-                Adicionar
-              </Button>
-            </Link>
+            <Button
+              variant="primary"
+              size="sm"
+              className="flex items-center gap-2 rounded-full"
+              disabled={loading}
+              onClick={() => {
+                setLoading(true);
+                router.push("/barbeiro/horarios/novo")
+              }}
+              >
+              {
+                loading ? (
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                ) : (
+                  <CalendarPlus className="w-4 h-4" />
+                )
+              }
+              Adicionar
+            </Button>
         </CardHeader>
         <CardContent className="space-y-3">
           {isLoading ? (
