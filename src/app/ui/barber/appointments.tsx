@@ -189,7 +189,7 @@ export default function AppointmentsPage({
               ) : (
                 <>
                   <Check className="w-4 h-4 mr-1" />
-                  Finalizar
+                  Concluir
                 </>
               )}
             </Button>
@@ -199,12 +199,29 @@ export default function AppointmentsPage({
     );
   };
 
+  const handleLoadMore = () => setSize(prev => prev + 1);
+
   useEffect(() => {
     if (data) {
       const flattenedSongs = data.flatMap(page => page.data || []);
       setAppointments(flattenedSongs);
     }
   }, [data]);
+
+  const totalRecords = data?.[0]?.total || 0;
+  const loadedRecords = data ? data.flatMap(page => page.data).length : 0;
+  const isLoadingInitialData = !data && !error;
+  const isLoadingMore = isLoadingInitialData || isValidating;
+  const isReachingEnd = loadedRecords >= totalRecords;
+
+  if(isLoading) {
+    return (
+       <div className="flex items-center justify-center min-h-[300px]">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        <span className="sr-only">Carregando atendimentos...</span>
+      </div>
+    );
+  }
 
   return (
     <main className="p-4 max-w-md mx-auto space-y-6">
@@ -262,7 +279,7 @@ export default function AppointmentsPage({
           >
             {
               value === 'SCHEDULED' ? 'Agendados' 
-              : value === 'COMPLETED' ? 'Finalizados'
+              : value === 'COMPLETED' ? 'Concluídos'
               : 'Em andamento'
             }
             {
@@ -279,11 +296,29 @@ export default function AppointmentsPage({
       ) : appointments?.length === 0 ? (
         <p>Nenhum atendimento encontrado.</p>
       ) : (
-        <div className="space-y-4">
-          {appointments?.map((appointment: Agendamento) => (
-            <AtendimentoCard key={appointment.id} appointment={appointment} />
-          ))}
-        </div>
+        <>
+          <div className="space-y-4">
+            {appointments?.map((appointment: Agendamento) => (
+              <AtendimentoCard key={appointment.id} appointment={appointment} />
+            ))}
+          </div>
+
+          <div className="flex justify-center items-center mt-5">
+            <Button
+              variant="outline"
+              className="w-full"
+              disabled={isLoadingMore || isReachingEnd}
+              onClick={handleLoadMore}
+            >
+              {isLoadingMore
+                ? 'carregando...'
+                : isReachingEnd
+                ? 'não há mais dados'
+                : 'Mais'}
+            </Button>
+          </div>
+
+        </>
       )}
     </main>
   );

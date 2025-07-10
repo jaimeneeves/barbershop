@@ -17,6 +17,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const sortBy = searchParams.get("sortBy") || null;
     const status = searchParams.get("status") || null;
+    
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const size = parseInt(searchParams.get('size') || '10', 10);
+    const skip = (page - 1) * size;
+    const take = size;
 
     const whereCondition = {
       ...(sortBy === 'today' && { date: { gte: todayStart, lte: todayEnd } }),
@@ -43,13 +48,23 @@ export async function GET(request: Request) {
           },
         },
       },
+      skip: skip,
+      take: take,
     });
 
     if (!barbeiro || barbeiro.length === 0) {
       return jsonResponse({ error: "Nenhum agendamento encontrado" }, 200);
     }
 
-    return jsonResponse({data: barbeiro}, 200);
+    return jsonResponse({
+      data: barbeiro,
+      total: await prisma.appointment.count({
+        where: {
+          barberId: session.user.id,
+          ...whereCondition,
+        },
+      }),
+    }, 200);
 
   } catch (error) {
     console.error(error);
