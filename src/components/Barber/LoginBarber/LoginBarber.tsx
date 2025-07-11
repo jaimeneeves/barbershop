@@ -47,7 +47,7 @@ export default function LoginBarber() {
     try {
       console.log("Dados do formulário:", formData)
       const result = await signIn("credentials", {
-        redirect: true,
+        redirect: false,
         email: formData.email,
         password: formData.password,
         callbackUrl: "/barbeiro/dashboard",
@@ -114,7 +114,7 @@ export default function LoginBarber() {
                       <FormItem>
                         <div className="flex items-center justify-between">
                           <FormLabel htmlFor="password">Senha</FormLabel>
-                          <a href="#" className="text-sm underline hover:text-primary">Esqueceu?</a>
+                          {/* <a href="#" className="text-sm underline hover:text-primary">Esqueceu?</a> */}
                         </div>
                         <FormControl>
                           <Input
