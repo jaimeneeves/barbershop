@@ -102,25 +102,25 @@ export default function BarberAvailabilityPage() {
       <Card>
         <CardHeader className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Suas Disponibilidades</h2>
-            <Button
-              variant="primary"
-              size="sm"
-              className="flex items-center gap-2 rounded-full"
-              disabled={loading}
-              onClick={() => {
-                setLoading(true);
-                router.push("/barbeiro/horarios/novo")
-              }}
-              >
-              {
-                loading ? (
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                ) : (
-                  <CalendarPlus className="w-4 h-4" />
-                )
-              }
-              Adicionar
-            </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            className="flex items-center gap-2 rounded-full"
+            disabled={loading}
+            onClick={() => {
+              setLoading(true);
+              router.push("/barbeiro/horarios/novo")
+            }}
+            >
+            {
+              loading ? (
+                <Loader2 className="w-6 h-6 animate-spin" />
+              ) : (
+                <CalendarPlus className="w-4 h-4" />
+              )
+            }
+            Adicionar
+          </Button>
         </CardHeader>
         <CardContent className="space-y-3">
           {isLoading ? (
