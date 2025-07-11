@@ -44,7 +44,6 @@ export default function ProfileEdit() {
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
-    mode: "onTouched",
     defaultValues: {
       oldPassword: "",
       newPassword: "",
@@ -135,11 +134,21 @@ export default function ProfileEdit() {
                   <FormItem>
                     <FormLabel>Senha Atual</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Digite sua senha atual"
-                        {...field}
-                      />
+                      <div className="relative">
+                        <Input
+                          type={showOld ? "text" : "password"}
+                          placeholder="Digite sua senha atual"
+                          {...field}
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          onClick={() => setShowOld((prev) => !prev)}
+                          tabIndex={-1}
+                        >
+                          {showOld ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -155,11 +164,21 @@ export default function ProfileEdit() {
                   <FormItem>
                     <FormLabel>Nova Senha</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Digite a nova senha"
-                        {...field}
-                      />
+                      <div className="relative">
+                        <Input
+                          type={showNew ? "text" : "password"}
+                          placeholder="Digite a nova senha"
+                          {...field}
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          onClick={() => setShowNew((prev) => !prev)}
+                          tabIndex={-1}
+                        >
+                          {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -175,22 +194,30 @@ export default function ProfileEdit() {
                   <FormItem>
                     <FormLabel>Confirmar Nova Senha</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Repita a nova senha"
-                        {...field}
-                      />
+                      <div className="relative">
+                        <Input
+                          type={showConfirm ? "text" : "password"}
+                          placeholder="Repita a nova senha"
+                          {...field}
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          onClick={() => setShowConfirm((prev) => !prev)}
+                          tabIndex={-1}
+                        >
+                          {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
-
             {success && (
               <p className="text-sm text-green-600">Senha atualizada com sucesso!</p>
             )}
-
             <Button type="submit" size='lg' className="w-full mt-2 rounded-full" disabled={isMutating}>
               {isMutating ? "Aguarde..." : "Atualizar Senha"}
             </Button>
