@@ -1,58 +1,83 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import useSWR from "swr";
 import { useState } from "react";
-import { fetcher } from "@/lib/fetcher";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useRouter } from 'next/navigation';
+import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { postFetcher } from "@/lib/fetcher";
+import useSWRMutation from "swr/mutation";
+
+const FormSchema = z
+  .object({
+    oldPassword: z.string().min(6, {message:"A senha atual é obrigatória"}),
+    newPassword: z.string().min(6, {message:"A nova senha precisa ter no mínimo 6 caracteres"}),
+    confirmNewPassword: z.string().min(6, { message: "Confirmação da senha deve ter no mínimo 6 caracteres" }),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: "As senhas não coincidem",
+    path: ["confirmNewPassword"],
+  });
 
 export default function ProfileEdit() {
   const { data: session, status } = useSession();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmNewPassword, setConfirmNewPassword] = useState("");
-  const [error, setError] = useState("");
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    mode: "onTouched",
+    defaultValues: {
+      oldPassword: "",
+      newPassword: "",
+      confirmNewPassword: "",
+    },
+  })
 
-  const handleUpdatePassword = async () => {
+  const { trigger, isMutating } = useSWRMutation("/api/barbers/update-password", postFetcher);
+
+  const onSubmit = async (formData: z.infer<typeof FormSchema>) => {
     setLoading(true);
-    setError("");
     setSuccess(false);
 
-    if (newPassword !== confirmNewPassword) {
-      setError("A nova senha e a confirmação não coincidem.");
-      setLoading(false);
-      return;
-    }
-
     try {
-      const res = await fetch("/api/barbers/update-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ oldPassword, newPassword }),
+      await trigger({
+        oldPassword: formData.oldPassword,
+        newPassword: formData.newPassword,
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Erro desconhecido.");
-      } else {
-        setSuccess(true);
-        setOldPassword("");
-        setNewPassword("");
-        setConfirmNewPassword("");
+      form.reset();
+      setSuccess(true);
+      toast.success("Senha atualizada com sucesso!");
+      router.push("/barber/dashboard");
+    } catch (error) {
+      console.log("Erro ao agendar:", error);
+      let errorMessage = "Erro desconhecido";
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const errObj = error as { response?: { error?: string } };
+        errorMessage = errObj.response?.error || errorMessage;
       }
-    } catch (e) {
-      setError("Erro ao conectar com o servidor.");
+      toast.error(`Erro ao agendar: ${errorMessage}`);
     } finally {
       setLoading(false);
+      setSuccess(false);
     }
   };
 
@@ -81,7 +106,7 @@ export default function ProfileEdit() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold">Editar Perfil</h2>
+          <h2 className="text-lg font-semibold">Informações do Perfil</h2>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -92,55 +117,88 @@ export default function ProfileEdit() {
             <p className="text-sm text-muted-foreground">Email</p>
             <p>{session?.user?.email}</p>
           </div>
-
-          <div className="space-y-4 pt-2 bg-muted dark:bg-muted-800 rounded-lg p-4">
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <h2 className="text-lg font-semibold">Atualizar Senha</h2>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+          <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="space-y-2">
-              <label className="text-sm font-medium block">Senha Atual</label>
-              <Input
-                type="password"
-                placeholder="Digite sua senha atual"
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
+              <FormField
+                control={form.control}
+                name="oldPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Senha Atual</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Digite sua senha atual"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium block">Nova Senha</label>
-              <Input
-                type="password"
-                placeholder="Digite a nova senha"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+              <FormField
+                control={form.control}
+                name="newPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nova Senha</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Digite a nova senha"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium block">Confirmar Nova Senha</label>
-              <Input
-                type="password"
-                placeholder="Repita a nova senha"
-                value={confirmNewPassword}
-                onChange={(e) => setConfirmNewPassword(e.target.value)}
+              <FormField
+                control={form.control}
+                name="confirmNewPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirmar Nova Senha</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Repita a nova senha"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-
-            <Button
-              onClick={handleUpdatePassword}
-              disabled={loading || newPassword.length < 6}
-              className="w-full"
-            >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              Atualizar Senha
-            </Button>
 
             {success && (
               <p className="text-sm text-green-600">Senha atualizada com sucesso!</p>
             )}
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
-          </div>
+            <Button type="submit" size='lg' className="w-full mt-2 rounded-full" disabled={isMutating}>
+              {isMutating ? "Aguarde..." : "Atualizar Senha"}
+            </Button>
+          </form>
+          </Form>
         </CardContent>
       </Card>
+
     </main>
   );
 }
