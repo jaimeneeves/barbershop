@@ -126,6 +126,7 @@ model BarberAvailability {
 
 enum AppointmentStatus {
   SCHEDULED
+  IN_PROGRESS
   COMPLETED
   CANCELLED
 }
