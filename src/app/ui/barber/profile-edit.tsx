@@ -65,7 +65,6 @@ export default function ProfileEdit() {
       form.reset();
       setSuccess(true);
       toast.success("Senha atualizada com sucesso!");
-      // router.push("/barber/dashboard");
     } catch (error) {
       console.log("Erro ao agendar:", error);
       let errorMessage = "Erro desconhecido";
